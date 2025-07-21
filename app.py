@@ -1,7 +1,7 @@
 # app.py
 import streamlit as st
 import pandas as pd
-from update import processar_planilha_com_resgates
+from updateweb import processar_planilha_com_resgates
 
 st.set_page_config(page_title="Transol Conecta", page_icon="📊")
 st.markdown("""
