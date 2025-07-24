@@ -2,7 +2,7 @@
 import pandas as pd
 
 # Link direto para o Excel no Google Drive (exportação como .xlsx)
-URL_PLANILHA = "https://docs.google.com/spreadsheets/d/1aOluyBN9SbfbNywngw0dXBFqPxDu28kI/export?format=xlsx"
+URL_PLANILHA = "https://docs.google.com/spreadsheets/d/1sEsnNi-gGYDuwZ9qZexvbAfp4dvqKoPN/edit?usp=sharing&ouid=105446416935353119925&rtpof=true&sd=true"
 
 def processar_planilha_com_resgates():
     try:
