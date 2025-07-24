@@ -109,6 +109,6 @@ if st.button("Buscar"):
 st.markdown("""
 <hr style="margin-top: 3rem;">
 <p style="text-align:center; font-size:0.9rem; color:#999999;">
-    Desenvolvido por <strong> – Eletro Transol</strong> • Todos os direitos reservados
+    Desenvolvido por <strong> – Eletro Transol Tecnologia</strong> • Todos os direitos reservados
 </p>
 """, unsafe_allow_html=True)
