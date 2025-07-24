@@ -1,0 +1,7 @@
+[theme]
+base = "light"
+primaryColor = "#d91c1c"            # Vermelho institucional (botões, destaques)
+backgroundColor = "#ffffff"         # Fundo principal branco
+secondaryBackgroundColor = "#f8f8f8" # Containers, cartões, blocos
+textColor = "#111111"               # Texto escuro para contraste
+font = "sans serif"
