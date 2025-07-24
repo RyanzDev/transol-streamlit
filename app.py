@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from updateweb import processar_planilha_com_resgate
+from updateweb import processar_planilha_com_resgates
 
 # Configuração da página
 st.set_page_config(page_title="Transol Conecta", page_icon="📊", layout="centered")
@@ -79,7 +79,7 @@ if st.button("Buscar"):
         entrada_str = entrada.strip().upper()
         entrada_numeros = ''.join(filter(str.isdigit, entrada))
 
-        df = processar_planilha_com_resgate()
+        df = processar_planilha_com_resgates()
 
         if 'Eletricista' not in df.columns:
             st.error("Erro: Dados não carregados corretamente.")
