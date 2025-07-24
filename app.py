@@ -5,10 +5,10 @@ from updateweb import processar_planilha_com_resgates
 # Configuração da página
 st.set_page_config(page_title="Transol Conecta", page_icon="📊", layout="centered")
 
-# Força o modo claro (resolve o bug do dark mode em celulares)
+# Força o modo claro para todos os dispositivos
 st.markdown("""
     <style>
-    html, body, [class*="css"]  {
+    html, body, [class*="css"] {
         background-color: #ffffff;
         color: #333333;
     }
@@ -53,24 +53,23 @@ st.markdown("""
     img.logo {
         width: 240px;
     }
-
     </style>
 """, unsafe_allow_html=True)
 
 # Logo
 st.markdown("""
 <div class="logo-container">
-    <img src="https://raw.githubusercontent.com/RyanzDev/transol-streamlit/263c301376aadb18d3b66703ab18a2ed5952d96e/logo.png" class="logo">
+    <img src="https://raw.githubusercontent.com/RyanzDev/transol-streamlit/main/logo.png" class="logo">
 </div>
 """, unsafe_allow_html=True)
 
 # Título
 st.markdown("Insira o **CPF** ou **nome completo** do eletricista abaixo para verificar sua pontuação:")
 
-# Campo de entrada
-entrada = st.text_input("Campo de busca", label_visibility="collapsed", max_chars=100)
+# Campo de entrada com label oculto (evita o aviso do Streamlit)
+entrada = st.text_input("Digite aqui o nome ou CPF/CNPJ do eletricista:", label_visibility="collapsed", max_chars=100)
 
-# Botão
+# Botão de busca
 if st.button("Buscar"):
     if not entrada.strip():
         st.warning("Por favor, insira o nome ou CPF/CNPJ.")
@@ -104,4 +103,12 @@ if st.button("Buscar"):
                     </div>
                 """, unsafe_allow_html=True)
         else:
-            st.error("Eletricista não encontrado.")
+            st.error("❌ Eletricista não encontrado.")
+
+# Rodapé institucional
+st.markdown("""
+<hr style="margin-top: 3rem;">
+<p style="text-align:center; font-size:0.9rem; color:#999999;">
+    Desenvolvido por <strong> – Eletro Transol</strong> • Todos os direitos reservados
+</p>
+""", unsafe_allow_html=True)
