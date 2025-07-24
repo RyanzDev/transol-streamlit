@@ -65,7 +65,6 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Título
-st.title("📊 Transol Conecta – Consulta de Pontuação")
 st.markdown("Insira o **CPF** ou **nome completo** do eletricista abaixo para verificar sua pontuação:")
 
 # Campo de entrada
