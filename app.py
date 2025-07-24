@@ -68,7 +68,7 @@ st.markdown("""
 st.markdown("Insira o **CPF** ou **nome completo** do eletricista abaixo para verificar sua pontuação:")
 
 # Campo de entrada
-entrada = st.text_input("", max_chars=100)
+entrada = st.text_input("Campo de busca", label_visibility="collapsed", max_chars=100)
 
 # Botão
 if st.button("Buscar"):
