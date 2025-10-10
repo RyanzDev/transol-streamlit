@@ -77,7 +77,7 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-st.markdown("Insira o **CPF** ou **nome completo** do eletricista abaixo para verificar sua pontuação:")
+st.markdown("Insira o **CPF** ou **CNPJ** do eletricista abaixo para verificar sua pontuação:")
 
 # Campo com label oculto
 entrada = st.text_input(
@@ -91,7 +91,7 @@ entrada = st.text_input(
 # =========================
 if st.button("Buscar"):
     if not entrada.strip():
-        st.warning("Por favor, insira o nome ou CPF/CNPJ.")
+        st.warning("Por favor, insira seu CPF ou CNPJ.")
     else:
         entrada_nome = entrada.strip().upper()
         entrada_doc = norm_doc(entrada)
@@ -152,4 +152,5 @@ st.markdown("""
     Desenvolvido por <strong>– Eletro Transol Tecnologia</strong> • Todos os direitos reservados
 </p>
 """, unsafe_allow_html=True)
+
 
