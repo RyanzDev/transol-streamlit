@@ -137,9 +137,9 @@ if st.button("Buscar"):
                         if hist.empty:
                             st.info("Nenhum resgate encontrado para este eletricista.")
                         else:
-                            hist = hist.copy()
-                            hist["Valor Resgatado"] = hist["Valor Resgatado"].apply(fmt_brl)
-                            st.dataframe(hist, use_container_width=True)
+                            # Mostra somente DataHora, Pontos e Usuário (sem Valor em R$)
+                            cols = [c for c in ["DataHora Resgate", "Pontos Resgatados", "Usuario"] if c in hist.columns]
+                            st.dataframe(hist[cols].reset_index(drop=True), use_container_width=True)
                     except Exception as e:
                         st.error(f"Erro ao carregar histórico de resgates: {e}")
         else:
@@ -152,5 +152,3 @@ st.markdown("""
     Desenvolvido por <strong>– Eletro Transol Tecnologia</strong> • Todos os direitos reservados
 </p>
 """, unsafe_allow_html=True)
-
-
