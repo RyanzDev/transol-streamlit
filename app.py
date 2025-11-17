@@ -60,6 +60,7 @@ def only_digits(s: str) -> str:
 
 def norm_doc(s: str) -> str:
     d = only_digits(s)
+    # se vier menos dígitos, zfill garante formatação consistente
     return d.zfill(11) if len(d) <= 11 else d.zfill(14)
 
 def fmt_brl(x) -> str:
@@ -67,6 +68,20 @@ def fmt_brl(x) -> str:
         return "R$ " + f"{float(x):,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
     except Exception:
         return "R$ 0,00"
+
+def mascarar_doc(doc: str) -> str:
+    """
+    Mascara CPF/CNPJ para não expor o documento completo.
+    Ex.: CPF -> ***.***.***-12
+         CNPJ -> **.***.***/****-34
+    """
+    d = only_digits(doc)
+    if len(d) == 11:
+        return f"***.***.***-{d[-2:]}"
+    elif len(d) == 14:
+        return f"**.***.***/****-{d[-2:]}"
+    else:
+        return "Documento protegido"
 
 # =========================
 # Logo e título
@@ -79,71 +94,90 @@ st.markdown("""
 
 st.markdown("Insira o **CPF** ou **CNPJ** do eletricista abaixo para verificar sua pontuação:")
 
-# Campo com label oculto
+# Campo de entrada SOMENTE para CPF/CNPJ (não citar mais nome)
 entrada = st.text_input(
-    "Digite aqui o nome ou CPF/CNPJ do eletricista:",
+    "CPF ou CNPJ do eletricista:",
     label_visibility="collapsed",
-    max_chars=100
+    max_chars=100,
+    placeholder="Digite apenas números ou com pontuação (ex: 000.000.000-00)"
 )
 
 # =========================
 # Busca
 # =========================
 if st.button("Buscar"):
-    if not entrada.strip():
-        st.warning("Por favor, insira seu CPF ou CNPJ.")
-    else:
-        entrada_nome = entrada.strip().upper()
-        entrada_doc = norm_doc(entrada)
+    # Limpa a entrada para pegar só dígitos
+    doc_digitado = only_digits(entrada)
 
-        df = processar_planilha_com_resgates()
+    # 1) Validação básica da entrada
+    if not doc_digitado:
+        st.warning("Por favor, insira seu CPF ou CNPJ (apenas números).")
+        st.stop()
+    if len(doc_digitado) not in (11, 14):
+        st.error("Documento inválido. CPF deve ter 11 dígitos e CNPJ 14 dígitos.")
+        st.stop()
 
-        if 'Eletricista' not in df.columns:
-            st.error("Erro: Dados não carregados corretamente.")
-            st.stop()
+    # Normaliza documento digitado
+    doc_norm = norm_doc(doc_digitado)
 
-        # Normalização para comparação
-        df['Eletricista'] = df['Eletricista'].astype(str).str.strip().str.upper()
-        df['CPF/CNPJ'] = df['CPF/CNPJ'].astype(str).apply(norm_doc)
+    # 2) Carrega dados consolidados (TAB01+TAB02 via updateweb)
+    df = processar_planilha_com_resgates()
 
-        # Match por nome exato OU CPF/CNPJ
-        resultado = df[(df['Eletricista'] == entrada_nome) | (df['CPF/CNPJ'] == entrada_doc)]
+    if 'Eletricista' not in df.columns or 'CPF/CNPJ' not in df.columns:
+        st.error("Erro: Dados não carregados corretamente.")
+        st.stop()
 
-        if not resultado.empty:
-            st.success("✅ Eletricista encontrado!")
-            for _, row in resultado.iterrows():
-                nome = row.get('Eletricista', '')
-                doc  = row.get('CPF/CNPJ', '')
-                total_vendido = row.get('Total Vendido (R$)', 0.0)
-                pontos_totais = int(row.get('Pontos', 0))
-                pontos_resgatados = int(row.get('Pontos Resgatados', 0))
-                pontos_finais = int(row.get('Pontos Finais', 0))
+    # Normalização de colunas
+    df['Eletricista'] = df['Eletricista'].astype(str).str.strip().str.upper()
+    df['CPF/CNPJ_norm'] = df['CPF/CNPJ'].astype(str).apply(norm_doc)
 
-                st.markdown(f"""
-                    <div class='resultado-container'>
-                        <p><strong>Nome:</strong> {nome}</p>
-                        <p><strong>CPF/CNPJ:</strong> {doc}</p>
-                        <p><strong>Total Vendido:</strong> {fmt_brl(total_vendido)}</p>
-                        <p><strong>Total de pontos:</strong> {pontos_totais}</p>
-                        <p><strong>Pontos resgatados:</strong> {pontos_resgatados}</p>
-                        <p><strong>Pontos Finais:</strong> {pontos_finais}</p>
-                    </div>
-                """, unsafe_allow_html=True)
+    # 3) Filtra APENAS por CPF/CNPJ exato
+    resultado = df[df['CPF/CNPJ_norm'] == doc_norm]
 
-                # Histórico de resgates (opcional) — TAB02
-                with st.expander("Ver histórico de resgates (opcional)"):
-                    try:
-                        hist = uw.carregar_resgates_por_nome(nome)
-                        if hist.empty:
-                            st.info("Nenhum resgate encontrado para este eletricista.")
-                        else:
-                            # Mostra somente DataHora, Pontos e Usuário (sem Valor em R$)
-                            cols = [c for c in ["DataHora Resgate", "Pontos Resgatados", "Usuario"] if c in hist.columns]
-                            st.dataframe(hist[cols].reset_index(drop=True), use_container_width=True)
-                    except Exception as e:
-                        st.error(f"Erro ao carregar histórico de resgates: {e}")
-        else:
-            st.error("❌ Eletricista não encontrado.")
+    if resultado.empty:
+        st.error("❌ Eletricista não encontrado para o CPF/CNPJ informado.")
+        st.stop()
+
+    if len(resultado) > 1:
+        # caso raro, mas tratado para segurança
+        st.error("⚠️ Mais de um cadastro encontrado para este CPF/CNPJ. "
+                 "Entre em contato com a equipe da Eletro Transol para regularização do cadastro.")
+        st.stop()
+
+    # 4) Exibir dados do único eletricista encontrado
+    row = resultado.iloc[0]
+
+    nome = row.get('Eletricista', '')
+    doc  = row.get('CPF/CNPJ', '')
+    total_vendido = row.get('Total Vendido (R$)', 0.0)
+    pontos_totais = int(row.get('Pontos', 0))
+    pontos_resgatados = int(row.get('Pontos Resgatados', 0))
+    pontos_finais = int(row.get('Pontos Finais', 0))
+
+    st.success("✅ Eletricista encontrado!")
+
+    st.markdown(f"""
+        <div class='resultado-container'>
+            <p><strong>Nome:</strong> {nome}</p>
+            <p><strong>CPF/CNPJ:</strong> {mascarar_doc(doc)}</p>
+            <p><strong>Total Vendido:</strong> {fmt_brl(total_vendido)}</p>
+            <p><strong>Total de pontos:</strong> {pontos_totais}</p>
+            <p><strong>Pontos resgatados:</strong> {pontos_resgatados}</p>
+            <p><strong>Pontos Finais:</strong> {pontos_finais}</p>
+        </div>
+    """, unsafe_allow_html=True)
+
+    # Histórico de resgates (opcional) — TAB02
+    with st.expander("Ver histórico de resgates (opcional)"):
+        try:
+            hist = uw.carregar_resgates_por_nome(nome)
+            if hist.empty:
+                st.info("Nenhum resgate encontrado para este eletricista.")
+            else:
+                cols = [c for c in ["DataHora Resgate", "Pontos Resgatados", "Usuario"] if c in hist.columns]
+                st.dataframe(hist[cols].reset_index(drop=True), use_container_width=True)
+        except Exception as e:
+            st.error(f"Erro ao carregar histórico de resgates: {e}")
 
 # Rodapé
 st.markdown("""
