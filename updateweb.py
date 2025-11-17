@@ -4,7 +4,7 @@ import pandas as pd
 import streamlit as st
 
 # Link direto para o Excel no Google Drive (exportação como .xlsx)
-URL_PLANILHA = "https://docs.google.com/spreadsheets/d/1sEsnNi-gGYDuwZ9qZexvbAfp4dvqKoPN/export?format=xlsx"
+URL_PLANILHA = "https://docs.google.com/spreadsheets/d/16LU1i2s1g9cTlZFINu07u-fkWD_ETyz4/export?format=xlsx"
 
 VALOR_POR_PONTO = 1.50  # 1 ponto = R$ 1,50
 
@@ -151,3 +151,4 @@ def carregar_resgates_por_nome(nome: str) -> pd.DataFrame:
         if c not in hist.columns:
             hist[c] = ""
     return hist[cols].reset_index(drop=True)
+
